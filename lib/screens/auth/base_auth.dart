@@ -4,12 +4,13 @@ import 'package:flutter/material.dart';
 class BaseAuthScreen extends StatelessWidget {
   final Widget body;
   const BaseAuthScreen({Key? key, required this.body}) : super(key: key);
-
+  @override
   Widget build(BuildContext context) {
     return Scaffold(
         resizeToAvoidBottomInset: false,
         backgroundColor: Colors.white,
         body: SingleChildScrollView(
+          reverse:  true,
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -22,12 +23,9 @@ class BaseAuthScreen extends StatelessWidget {
                   children: [
                     Image.asset('assets/images/logo2.png',
                         cacheHeight: 80, cacheWidth: 60),
-                    const Text(
+                      Text(
                       "connect",
-                      style: TextStyle(
-                          color: kPrimaryColor,
-                          fontSize: 25,
-                          fontWeight: FontWeight.bold),
+                      style: Theme.of(context).textTheme.headline1!.copyWith(color: kPrimaryColor),
                     )
                   ],
                 ),

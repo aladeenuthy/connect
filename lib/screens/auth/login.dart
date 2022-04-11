@@ -1,93 +1,170 @@
+import 'package:connect/providers/auth_provider.dart';
+import 'package:connect/screens/auth/base_auth.dart';
+import 'package:connect/screens/auth/signup.dart';
+import 'package:connect/screens/home/chats_screen.dart';
 import "package:flutter/material.dart";
+import 'package:provider/provider.dart';
 
 import '../../utils/constants.dart';
+import '../../utils/services.dart';
+import '../add_user_details/add_user_detail.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({Key? key}) : super(key: key);
-
+  static const routeName = '/login-screen';
   @override
   State<LoginScreen> createState() => _LoginScreenState();
 }
 
 class _LoginScreenState extends State<LoginScreen> {
+  final _emailController = TextEditingController();
+  final _passwordController = TextEditingController();
+  bool _obscureText = true;
+  Widget _buildInputField(
+      String hintText, Icon prefixIcon, TextEditingController controller,
+      [Widget? suffixIcon]) {
+    return TextField(
+        controller: controller,
+        keyboardType: hintText == 'email'
+            ? TextInputType.emailAddress
+            : TextInputType.text,
+        obscureText: hintText == 'password' ? _obscureText : false,
+        decoration: InputDecoration(
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
+          hintText: hintText,
+        ));
+  }
+
+  void _loginWithEmailAndPassword() async {
+    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+      return;
+    }
+    showLoadingSpinner(context);
+    FocusScope.of(context).unfocus();
+    final isLoggedIn = await Provider.of<AuthProvider>(context, listen: false)
+        .signIn(_emailController.text, _passwordController.text, context);
+    if (!isLoggedIn) {
+      Navigator.of(context).pop();
+      return;
+    }
+    Navigator.of(context).pop();// pop loading spinner 
+    Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);// pop login and push home screen
+  }
+
+  void _loginWithGoogle() async {
+    FocusScope.of(context).unfocus();
+    final isLoggedIn = await Provider.of<AuthProvider>(context, listen: false)
+        .signInWithGoogle(context);
+    if (!isLoggedIn) {
+      return; //not successful
+    }
+    if (Provider.of<AuthProvider>(context, listen: false)
+            .userCredential
+            .additionalUserInfo
+            ?.isNewUser ??
+        false) {
+      Navigator.of(context).popAndPushNamed(AddUserDetails.routeName);//if new user show add detail screen
+      return;
+    }
+    Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);//if not new user push mf to the home screen
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text("Login",
-          style: TextStyle(
-              color: kPrimaryColor, fontSize: 25, fontWeight: FontWeight.bold)),
-      const SizedBox(
-        height: 20,
-      ),
-      const TextField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.mail_outline),
-          hintText: "email",
+    return BaseAuthScreen(
+        body: Container(
+      padding: EdgeInsets.only(
+          bottom: MediaQuery.of(context).viewInsets.bottom + 10),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Login",
+            style: Theme.of(context)
+                .textTheme
+                .headline1!
+                .copyWith(color: kPrimaryColor)),
+        const SizedBox(
+          height: 20,
         ),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      const TextField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.lock),
-          suffixIcon: Icon(Icons.visibility_off),
-          hintText: "password",
+        _buildInputField('email', const Icon(Icons.email), _emailController),
+        const SizedBox(
+          height: 10,
         ),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: ElevatedButton(
-          onPressed: () {},
+        _buildInputField(
+          'password',
+          const Icon(Icons.lock),
+          _passwordController,
+          IconButton(
+              onPressed: () {
+                setState(() {
+                  _obscureText = !_obscureText;
+                });
+              },
+              icon: _obscureText
+                  ? const Icon(Icons.visibility_off)
+                  : const Icon(Icons.visibility)),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(30),
+          child: ElevatedButton(
+            onPressed: _loginWithGoogle,
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                SizedBox(
+                    height: 25,
+                    width: 50,
+                    child: Image.asset("assets/images/google_logo.png")),
+                const Text(
+                  "continue with google",
+                  style: TextStyle(color: Colors.white, fontSize: 17),
+                )
+              ],
+            ),
+            style: ElevatedButton.styleFrom(
+                primary: kPrimaryColor,
+                padding: const EdgeInsets.all(10),
+                elevation: 0),
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        ElevatedButton(
+          onPressed: _loginWithEmailAndPassword,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               Text(
-                "Login with snapchat",
-                style: TextStyle(color: Colors.black, fontSize: 17),
-              )
+                "Login",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Icon(Icons.arrow_right)
             ],
           ),
           style: ElevatedButton.styleFrom(
-              primary: const Color.fromARGB(255, 255, 252, 0),
+              primary: kPrimaryColor,
               padding: const EdgeInsets.all(10),
               elevation: 0),
         ),
-      ),
-      const SizedBox(height: 10,)
-,      ElevatedButton(
-        onPressed: () {},
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              "Login",
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            SizedBox(
-              width: 5,
-            ),
-            Icon(Icons.arrow_right)
-          ],
+        const SizedBox(
+          height: 10,
         ),
-        style: ElevatedButton.styleFrom(
-            primary: kPrimaryColor,
-            padding: const EdgeInsets.all(10),
-            elevation: 0),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      Align(
-          alignment: Alignment.center,
-          child: TextButton(
-            onPressed: () {},
-            child: const Text("Already have an account?  Login"),
-            style: TextButton.styleFrom(primary: kPrimaryColor),
-          ))
-    ]);
+        Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).popAndPushNamed(SignupScreen.routeName);
+              },
+              child: const Text("Don't have an account?  Sign up"),
+              style: TextButton.styleFrom(primary: kPrimaryColor),
+            ))
+      ]),
+    ));
   }
 }

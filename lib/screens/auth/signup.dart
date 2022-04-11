@@ -1,103 +1,144 @@
+import 'package:connect/providers/auth_provider.dart';
+import 'package:connect/screens/add_user_details/add_user_detail.dart';
+import 'package:connect/screens/auth/base_auth.dart';
+import 'package:connect/screens/auth/login.dart';
 import 'package:connect/utils/constants.dart';
+import 'package:connect/utils/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'package:provider/provider.dart';
 
 class SignupScreen extends StatefulWidget {
   const SignupScreen({Key? key}) : super(key: key);
+  static const routeName = '/signup-screen';
 
   @override
   State<SignupScreen> createState() => _SignupScreenState();
 }
 
 class _SignupScreenState extends State<SignupScreen> {
+  final Map<String, String> _authData = {};
+
+  final _formKey = GlobalKey<FormState>();
+  bool _obscureText = true;
+  Widget _buildInputField(
+      String hintText, String? Function(String?) validator, Icon prefixIcon,
+      [Widget? suffixIcon]) {
+    return TextFormField(
+        validator: validator,
+        onSaved: (value) {
+          _authData[hintText] = value as String;
+        },
+        keyboardType: hintText == 'email'
+            ? TextInputType.emailAddress
+            : TextInputType.text,
+        obscureText: hintText == 'password' ? _obscureText : false,
+        decoration: InputDecoration(
+          prefixIcon: prefixIcon,
+          suffixIcon: suffixIcon,
+          hintText: hintText,
+        ));
+  }
+
+  void _signUpWithEmailAndPassword() async {
+    if (!_formKey.currentState!.validate()) {
+      return;
+    }
+    FocusScope.of(context).unfocus();
+    _formKey.currentState!.save();
+    showLoadingSpinner(context);
+    await Provider.of<AuthProvider>(context, listen: false)
+        .signUpWithEmailAndPassword(
+            _authData['email']!.trim(), _authData['password']!.trim(), context);
+    Navigator.of(context).pop();
+    Navigator.of(context).popAndPushNamed(AddUserDetails.routeName);
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
-      const Text("Sign Up",
-          style: TextStyle(
-              color: kPrimaryColor, fontSize: 25, fontWeight: FontWeight.bold)),
-      const SizedBox(
-        height: 10,
-      ),
-      ClipRRect(
-        borderRadius: BorderRadius.circular(30),
-        child: ElevatedButton(
-          onPressed: () {},
+    return BaseAuthScreen(
+        body: Container(
+      padding:
+          EdgeInsets.only(bottom: MediaQuery.of(context).viewInsets.bottom),
+      child: Column(crossAxisAlignment: CrossAxisAlignment.start, children: [
+        Text("Sign Up",
+            style: Theme.of(context)
+                .textTheme
+                .headline1!
+                .copyWith(color: kPrimaryColor)),
+        const SizedBox(
+          height: 10,
+        ),
+        Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                _buildInputField('email', (value) {
+                  if (value!.isEmpty || !value.contains('@')) {
+                    return 'Invalid email!';
+                  }
+                  return null;
+                }, const Icon(Icons.email)),
+                const SizedBox(
+                  height: 10,
+                ),
+                _buildInputField(
+                  'password',
+                  (value) {
+                    if (value!.isEmpty || value.length < 5) {
+                      return 'Password is too short!';
+                    }
+                    return null;
+                  },
+                  const Icon(Icons.lock),
+                  IconButton(
+                      onPressed: () {
+                        setState(() {
+                          _obscureText = !_obscureText;
+                        });
+                      },
+                      icon: _obscureText
+                          ? const Icon(Icons.visibility_off)
+                          : const Icon(Icons.visibility)),
+                ),
+              ],
+            )),
+        const SizedBox(
+          height: 10,
+        ),
+        ElevatedButton(
+          onPressed: _signUpWithEmailAndPassword,
           child: Row(
             mainAxisAlignment: MainAxisAlignment.center,
             children: const [
               Text(
-                "Sign up with snapchat",
-                style: TextStyle(color: Colors.black, fontSize: 17),
-              )
+                "create account",
+                style: TextStyle(color: Colors.white, fontSize: 16),
+              ),
+              SizedBox(
+                width: 5,
+              ),
+              Icon(Icons.arrow_right)
             ],
           ),
           style: ElevatedButton.styleFrom(
-              primary: const Color.fromARGB(255, 255, 252, 0),
-              padding: const EdgeInsets.all(10),
-              elevation: 0),
-        ),
-      ),
-      const SizedBox(
-        height: 20,
-      ),
-      const TextField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.person),
-          hintText: "username",
-        ),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      const TextField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.mail_outline),
-          hintText: "email",
-        ),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      const TextField(
-        decoration: InputDecoration(
-          prefixIcon: Icon(Icons.lock),
-          suffixIcon: Icon(Icons.visibility_off),
-          hintText: "password",
-        ),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      ElevatedButton(
-        onPressed: () {},
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: const [
-            Text(
-              "create account",
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            SizedBox(
-              width: 5,
-            ),
-            Icon(Icons.arrow_right)
-          ],
-        ),
-        style: ElevatedButton.styleFrom(
             primary: kPrimaryColor,
             padding: const EdgeInsets.all(10),
-            elevation: 0),
-      ),
-      const SizedBox(
-        height: 10,
-      ),
-      Align(
-          alignment: Alignment.center,
-          child: TextButton(
-            onPressed: () {},
-            child: const Text("Already have an account?  Login"),
-            style: TextButton.styleFrom(primary: kPrimaryColor),
-          ))
-    ]);
+          ),
+        ),
+        const SizedBox(
+          height: 10,
+        ),
+        Align(
+            alignment: Alignment.center,
+            child: TextButton(
+              onPressed: () {
+                Navigator.of(context).popAndPushNamed(LoginScreen.routeName);
+              },
+              child: const Text("Already have an account?  Login"),
+              style: TextButton.styleFrom(primary: kPrimaryColor),
+            ))
+      ]),
+    ));
   }
 }
