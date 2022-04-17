@@ -1,14 +1,19 @@
 import 'dart:io';
 
+import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthProvider with ChangeNotifier {
-  final googleSignIn = GoogleSignIn();
-  final _auth = FirebaseAuth.instance;
+class AuthProvider {
+  final _googleSignIn = GoogleSignIn(); //google sign in obj
+  GoogleSignIn get googleSignIn {
+    return _googleSignIn;
+  }
+
+  final auth = FirebaseAuth.instance; // firebase obj
   UserCredential? _userCredential;
   UserCredential get userCredential {
     return _userCredential as UserCredential;
@@ -17,7 +22,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> signUpWithEmailAndPassword(
       String email, String password, BuildContext context) async {
     try {
-      _userCredential = await _auth.createUserWithEmailAndPassword(
+      _userCredential = await auth.createUserWithEmailAndPassword(
           email: email, password: password);
       return true;
     } on FirebaseAuthException catch (e) {
@@ -31,7 +36,7 @@ class AuthProvider with ChangeNotifier {
   Future<bool> signIn(
       String email, String password, BuildContext context) async {
     try {
-      _userCredential = await _auth.signInWithEmailAndPassword(
+      _userCredential = await auth.signInWithEmailAndPassword(
           email: email, password: password);
 
       return true;
@@ -55,7 +60,8 @@ class AuthProvider with ChangeNotifier {
         accessToken: googleSignInAuth.accessToken);
 
     try {
-      _userCredential = await _auth.signInWithCredential(credentials);
+      _userCredential = await auth
+          .signInWithCredential(credentials); //signing in with credentials
       return true;
     } on FirebaseAuthException catch (e) {
       if (e.code == 'account-exists-with-different-credential') {
@@ -76,23 +82,31 @@ class AuthProvider with ChangeNotifier {
           .ref()
           .child('profile_pics')
           .child(FirebaseAuth.instance.currentUser!.uid + ".jpg");
+          
       await ref.putFile(image);
       final url = await ref.getDownloadURL();
-      await _auth.currentUser?.updateDisplayName(userName);
-      await _auth.currentUser?.updatePhotoURL(url);
+      await auth.currentUser?.updateDisplayName(userName);
+      await auth.currentUser?.updatePhotoURL(url);
+      await FirebaseFirestore.instance
+          .collection('users')
+          .doc(auth.currentUser?.uid).set({
+        'username': userName,
+        "userId": auth.currentUser?.uid,
+        "profileUrl": url,
+      });
       return true;
     } on FirebaseException catch (e) {
       showSnackBar(e.message ?? "Something went wrong", context);
     } catch (e) {
-      showSnackBar("something went wrong", context);
+      showSnackBar(e.toString(), context);
     }
     return false;
   }
 
   Future<bool> signOut(BuildContext context) async {
     try {
-      googleSignIn.signOut();
-      await _auth.signOut();
+      await googleSignIn.signOut();
+      await auth.signOut();
       return true;
     } on FirebaseAuthException catch (e) {
       showSnackBar(e.message ?? "Something went wrong", context);

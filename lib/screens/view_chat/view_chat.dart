@@ -1,11 +1,18 @@
-import 'package:connect/components/body_container.dart';
-import 'package:connect/screens/view_chat/components/message_bubble.dart';
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:connect/screens/view_chat/components/messages.dart';
+import 'package:connect/screens/view_chat/components/messsage_input.dart';
+import 'package:connect/utils/chat_helper.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
+import '../../models/user.dart';
+
 class ViewChat extends StatefulWidget {
-  const ViewChat({Key? key}) : super(key: key);
+  final ChatUser receiver;
+  const ViewChat({Key? key, required this.receiver}) : super(key: key);
+  static const routeName = "/viewchat";
 
   @override
   State<ViewChat> createState() => _ViewChatState();
@@ -13,30 +20,30 @@ class ViewChat extends StatefulWidget {
 
 class _ViewChatState extends State<ViewChat> {
   @override
-  Widget build(BuildContext context) {
-    final _appBar = AppBar(
+  void initState() {
+    super.initState();
+    ChatHelper.markLastMessageAsRead(getConvoId(
+        FirebaseAuth.instance.currentUser!.uid, widget.receiver.userId));
+  }
+
+  AppBar appbar() {
+    return AppBar(
       flexibleSpace: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
-          IconButton(
-            icon: const Icon(
-              Icons.arrow_back,
-              color: shadePrimaryColor,
-            ),
-            onPressed: () {},
-          ),
           const SizedBox(
-            width: 1,
+            width: 50,
           ),
-          const CircleAvatar(
+          CircleAvatar(
               radius: 22,
               backgroundColor: shadePrimaryColor,
-              backgroundImage: AssetImage('assets/images/avatar_5.png')),
+              backgroundImage:
+                  CachedNetworkImageProvider(widget.receiver.profileUrl)),
           const SizedBox(
             width: 7,
           ),
-          const Text("giggs",
-              style: TextStyle(
+          Text(widget.receiver.username,
+              style: const TextStyle(
                   color: shadePrimaryColor,
                   fontSize: 19,
                   fontWeight: FontWeight.bold)),
@@ -45,82 +52,37 @@ class _ViewChatState extends State<ViewChat> {
       backgroundColor: Colors.transparent,
       elevation: 0,
     );
+  }
+
+  @override
+  Widget build(BuildContext context) {
     final deviceHeight =
-        getDeviceHeight(context) - _appBar.preferredSize.height;
+        getDeviceHeight(context) - appbar().preferredSize.height;
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: _appBar,
+        appBar: appbar(),
         body: SingleChildScrollView(
           reverse: true,
           child: Padding(
             padding: EdgeInsets.only(
                 bottom: MediaQuery.of(context).viewInsets.bottom),
-            child: Column(children: [
-              SizedBox(
-                height: deviceHeight * 0.02,
-              ),
-              BodyContainer(
-                  size: deviceHeight * 0.87,
-                  bodyContent: ListView(
-                    reverse: true,
-                    children: const [
-                      MessageBubble(isUser: true),
-                      MessageBubble(isUser: false),
-                      MessageBubble(isUser: true),
-                      MessageBubble(isUser: true),
-                      MessageBubble(isUser: false),
-                      MessageBubble(isUser: true),
-                      MessageBubble(isUser: true),
-                      MessageBubble(isUser: false),
-                      MessageBubble(isUser: true)
-                    ],
-                  )),
-              Container(
-                padding:
-                    const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
-                color: Colors.white,
-                child: Container(
-                  padding: const EdgeInsets.only(right: 5),
-                  decoration: BoxDecoration(
-                      color: Colors.grey[100],
-                      borderRadius: BorderRadius.circular(25)),
-                  child: TextField(
-                    decoration: InputDecoration(
-                        prefixIcon: IconButton(
-                          onPressed: () {
-                            print("alhamdulilah");
-                            FocusScope.of(context).unfocus();
-                          },
-                          icon: const Icon(
-                            Icons.add,
-                            color: kPrimaryColor,
-                          ),
-                        ),
-                        enabledBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide:
-                                const BorderSide(color: Colors.transparent)),
-                        focusedBorder: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(25),
-                            borderSide:
-                                const BorderSide(color: Colors.transparent)),
-                        suffixIcon: CircleAvatar(
-                            radius: 20,
-                            backgroundColor: shadePrimaryColor,
-                            child: IconButton(
-                              onPressed: () {
-                                FocusScope.of(context).unfocus();
-                              },
-                              icon: const Icon(
-                                Icons.send,
-                                color: kPrimaryColor,
-                              ),
-                            ))),
-                  ),
+            child: SizedBox(
+              height: deviceHeight,
+              child: Column(children: [
+                SizedBox(
+                  height: deviceHeight * 0.02,
                 ),
-              )
-            ]),
+                Messages(
+                  size: deviceHeight,
+                  receiver: widget.receiver,
+                ),
+                Expanded(
+                    child: MessageInput(
+                  receiverId: widget.receiver.userId,
+                ))
+              ]),
+            ),
           ),
         ),
       ),

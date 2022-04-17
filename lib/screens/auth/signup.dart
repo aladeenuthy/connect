@@ -4,7 +4,6 @@ import 'package:connect/screens/auth/base_auth.dart';
 import 'package:connect/screens/auth/login.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -47,12 +46,18 @@ class _SignupScreenState extends State<SignupScreen> {
     FocusScope.of(context).unfocus();
     _formKey.currentState!.save();
     showLoadingSpinner(context);
-    await Provider.of<AuthProvider>(context, listen: false)
+    final isSignedUP = await context
+        .read<AuthProvider>()
         .signUpWithEmailAndPassword(
             _authData['email']!.trim(), _authData['password']!.trim(), context);
-    Navigator.of(context).pop();
-    Navigator.of(context).popAndPushNamed(AddUserDetails.routeName);
+    Navigator.of(context).pop(); // pop loading spinner
+    if (!isSignedUP) {
+      return; //not sucessful
+    }
+    Navigator.of(context)
+        .popAndPushNamed(AddUserDetails.routeName); //successful
   }
+
 
   @override
   Widget build(BuildContext context) {

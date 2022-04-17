@@ -1,7 +1,6 @@
 import 'dart:io';
-
+import 'package:connect/components/image_preview.dart';
 import 'package:connect/screens/home/chats_screen.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import 'package:provider/provider.dart';
@@ -23,64 +22,17 @@ class _AddUserDetailsState extends State<AddUserDetails> {
 
   void _saveDetails() async {
     FocusScope.of(context).unfocus();
-    print('here');
     if (_pickedImage == null || _usernameController.text.isEmpty) {
-      print("in hter");
       return;
     }
     showLoadingSpinner(context);
-    final isDone = await Provider.of<AuthProvider>(context, listen: false)
-        .saveUserDetails(
-            _pickedImage as File, _usernameController.text.trim(), context);
+    final isDone = await context.read<AuthProvider>().saveUserDetails(
+        _pickedImage as File, _usernameController.text.trim(), context);
     Navigator.of(context).pop();
     if (!isDone) {
-      print("fucked");
       return;
     }
     Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);
-  }
-
-  void _showImageOptions() {
-    AlertDialog alert = AlertDialog(
-      content: SizedBox(
-        height: 130,
-        child: Column(children: [
-          ListTile(
-              leading: const Icon(
-                Icons.camera,
-                color: kPrimaryColor,
-              ),
-              title: const Text(
-                "Camera",
-                style: TextStyle(color: kPrimaryColor, fontSize: 17),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(ImageSource.camera);
-              }),
-          const Divider(
-            color: kPrimaryColor,
-          ),
-          ListTile(
-              leading: const Icon(Icons.photo_album, color: kPrimaryColor),
-              title: const Text(
-                "Gallery",
-                style: TextStyle(color: kPrimaryColor, fontSize: 17),
-              ),
-              onTap: () {
-                Navigator.of(context).pop();
-                _pickImage(ImageSource.gallery);
-              })
-        ]),
-      ),
-    );
-    showDialog(
-      barrierDismissible: true,
-      context: context,
-      builder: (context) {
-        return alert;
-      },
-    );
   }
 
   void _pickImage(ImageSource source) async {
@@ -91,9 +43,22 @@ class _AddUserDetailsState extends State<AddUserDetails> {
       return;
     }
     File imageFile = File(image.path);
-    setState(() {
-      _pickedImage = imageFile;
-    });
+    if (source == ImageSource.gallery) {
+      Navigator.of(context)
+          .push(MaterialPageRoute(
+              builder: (context) => ImagePreview(image: imageFile)))
+          .then((value) {
+        if (value) {
+          setState(() {
+            _pickedImage = imageFile;
+          });
+        }
+      });
+    } else {
+      setState(() {
+        _pickedImage = imageFile;
+      });
+    }
   }
 
   @override
@@ -138,7 +103,10 @@ class _AddUserDetailsState extends State<AddUserDetails> {
                       child: CircleAvatar(
                           backgroundColor: Colors.black,
                           child: IconButton(
-                            onPressed: _showImageOptions,
+                            onPressed: () {
+                              showImageOptions(
+                                  context, _pickImage);
+                            },
                             icon: const Icon(
                               Icons.camera_alt,
                               color: kPrimaryColor,

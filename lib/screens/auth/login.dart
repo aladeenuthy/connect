@@ -42,32 +42,33 @@ class _LoginScreenState extends State<LoginScreen> {
     }
     showLoadingSpinner(context);
     FocusScope.of(context).unfocus();
-    final isLoggedIn = await Provider.of<AuthProvider>(context, listen: false)
-        .signIn(_emailController.text, _passwordController.text, context);
+    final isLoggedIn = await context.read<AuthProvider>().signIn(_emailController.text, _passwordController.text, context);
+    Navigator.of(context).pop(); // pop loading spinner
     if (!isLoggedIn) {
-      Navigator.of(context).pop();
       return;
     }
-    Navigator.of(context).pop();// pop loading spinner 
-    Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);// pop login and push home screen
+    Navigator.of(context).popAndPushNamed(
+        ChatsScreen.routeName); // pop login and push home screen
   }
 
   void _loginWithGoogle() async {
     FocusScope.of(context).unfocus();
-    final isLoggedIn = await Provider.of<AuthProvider>(context, listen: false)
-        .signInWithGoogle(context);
+    final isLoggedIn = await context.read<AuthProvider>().signInWithGoogle(context);
     if (!isLoggedIn) {
       return; //not successful
     }
-    if (Provider.of<AuthProvider>(context, listen: false)
+    if (context
+            .read<AuthProvider>()
             .userCredential
             .additionalUserInfo
             ?.isNewUser ??
         false) {
-      Navigator.of(context).popAndPushNamed(AddUserDetails.routeName);//if new user show add detail screen
+      Navigator.of(context).popAndPushNamed(
+          AddUserDetails.routeName); //if new user show add detail screen
       return;
     }
-    Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);//if not new user push mf to the home screen
+    Navigator.of(context).popAndPushNamed(
+        ChatsScreen.routeName); //if not new user push mf to the home screen
   }
 
   @override
