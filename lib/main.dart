@@ -1,3 +1,4 @@
+import 'package:connect/models/models.dart';
 import 'package:connect/providers/auth_provider.dart';
 import 'package:connect/screens/add_friends/add_friends_screen.dart';
 import 'package:connect/screens/add_user_details/add_user_detail.dart';
@@ -5,14 +6,20 @@ import 'package:connect/screens/auth/login.dart';
 import 'package:connect/screens/auth/signup.dart';
 import 'package:connect/screens/home/chats_screen.dart';
 import 'package:connect/screens/profile/profile_screen.dart';
+import 'package:connect/screens/view_chat/view_chat.dart';
 import 'package:connect/utils/constants.dart';
+import 'package:connect/helpers/key_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
+import 'package:onesignal_flutter/onesignal_flutter.dart';
 
-void main() async {
+Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  OneSignal.shared.setLogLevel(OSLogLevel.verbose, OSLogLevel.none);
+
+  OneSignal.shared.setAppId(appId);
   await Firebase.initializeApp();
   runApp(const MyApp());
 }
@@ -30,6 +37,9 @@ class MyApp extends StatelessWidget {
         ),
       ],
       child: MaterialApp(
+        navigatorKey: KeyHelper.navKey,
+        scaffoldMessengerKey: KeyHelper.scafKey,
+        debugShowCheckedModeBanner: false,
         title: 'Flutter Demo',
         theme: ThemeData(
             scaffoldBackgroundColor: kPrimaryColor,
@@ -56,13 +66,31 @@ class MyApp extends StatelessWidget {
         home: FirebaseAuth.instance.currentUser != null
             ? const ChatsScreen()
             : const LoginScreen(),
-        routes: {
-          ProfileScreen.routeName: (_) => const ProfileScreen(),
-          LoginScreen.routeName: (_) => const LoginScreen(),
-          SignupScreen.routeName: (_) => const SignupScreen(),
-          AddUserDetails.routeName: (_) => const AddUserDetails(),
-          ChatsScreen.routeName: (_) => const ChatsScreen(),
-          AddFriendsScreen.routeName: (_) => const AddFriendsScreen(),
+        onGenerateRoute: (settings) {
+          if (settings.name == ViewChat.routeName) {
+            final value = settings.arguments as ChatUser;
+            
+            return MaterialPageRoute(
+                settings: settings,
+                builder: (ctx) => ViewChat(receiver: value));
+          } else if (settings.name == AddFriendsScreen.routeName) {
+            return MaterialPageRoute(
+                settings: settings, builder: (ctx) => const AddFriendsScreen());
+          } else if (settings.name == AddUserDetails.routeName) {
+            return MaterialPageRoute(
+                settings: settings, builder: (ctx) => const AddUserDetails());
+          } else if (settings.name == LoginScreen.routeName) {
+            return MaterialPageRoute(
+                settings: settings, builder: (ctx) => const LoginScreen());
+          } else if (settings.name == SignupScreen.routeName) {
+            return MaterialPageRoute(
+                settings: settings, builder: (ctx) => const SignupScreen());
+          } else if (settings.name == ProfileScreen.routeName) {
+            return MaterialPageRoute(
+                settings: settings, builder: (ctx) => const ProfileScreen());
+          }
+          return MaterialPageRoute(
+              settings: settings, builder: (ctx) => const ChatsScreen());
         },
       ),
     );

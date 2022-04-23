@@ -1,20 +1,11 @@
 import 'package:connect/utils/constants.dart';
-import 'package:connectivity_plus/connectivity_plus.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:connect/helpers/key_helper.dart';
 
 double getDeviceHeight(BuildContext context) {
   return MediaQuery.of(context).size.height -
       MediaQuery.of(context).padding.top;
-}
-
-Future<bool> isConnectedToInternet() async {
-  var connectivityResult = await (Connectivity().checkConnectivity());
-  if (connectivityResult == ConnectivityResult.mobile ||
-      connectivityResult == ConnectivityResult.wifi) {
-    return true;
-  }
-  return false;
 }
 
 void showLoadingSpinner(BuildContext context) {
@@ -36,8 +27,8 @@ void showLoadingSpinner(BuildContext context) {
   );
 }
 
-void showSnackBar(String message, BuildContext context, [bool error = true]) {
-  ScaffoldMessenger.of(context).showSnackBar(SnackBar(
+void showSnackBar(String message,[bool error = true]) {
+  KeyHelper.scafKey.currentState!.showSnackBar(SnackBar(
     content: Text(message),
     backgroundColor: error ? Colors.redAccent : Colors.greenAccent,
   ));
@@ -54,8 +45,7 @@ String getConvoId(String id1, id2) {
   return '$id2-$id1';
 }
 
-void showImageOptions(
-    BuildContext context, Function imageCallBack) {
+void showImageOptions(BuildContext context, Function imageCallBack) {
   AlertDialog alert = AlertDialog(
     content: SizedBox(
       height: 130,

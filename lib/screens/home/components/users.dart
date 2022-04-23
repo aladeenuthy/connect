@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/screens/home/components/user_avatar.dart';
-import 'package:connect/utils/user_helper.dart';
+import 'package:connect/helpers/user_helper.dart';
 import 'package:flutter/material.dart';
 import '../../../models/user.dart';
 import '../../../utils/constants.dart';

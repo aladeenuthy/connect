@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
 
+const appId = "7d9e95af-12e9-49ed-a7f1-9e5210174944";
+const restKey = "OTEyMjM4MzktZmU1NC00ZjIzLWFiYzctNzRmYTIxZTJlMDI3";
 const primaryColor = Color.fromARGB(255, 10, 147, 255);
 const shadePrimaryColor = Color.fromARGB(255, 227, 176, 250);
 const shaderPrimaryColor = Color.fromARGB(255, 227, 176, 250);

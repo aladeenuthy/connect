@@ -1,5 +1,5 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connect/utils/chat_helper.dart';
+import 'package:connect/helpers/chat_helper.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -56,7 +56,7 @@ class MessageBubble extends StatelessWidget {
                 mainAxisAlignment:
                     isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
                 children: [
-                  const Text("12:00"),
+                  Text(message.date),
                   const SizedBox(
                     width: 5,
                   ),

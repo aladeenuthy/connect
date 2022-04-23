@@ -1,10 +1,10 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/components/body_container.dart';
+import 'package:connect/components/user_chat_loading.dart';
 import 'package:connect/screens/add_friends/components/user_search_result.dart';
 import 'package:connect/utils/constants.dart';
-import 'package:connect/utils/user_helper.dart';
+import 'package:connect/helpers/user_helper.dart';
 import 'package:flutter/material.dart';
-
 import '../../models/user.dart';
 import '../../utils/services.dart';
 import '../view_chat/view_chat.dart';
@@ -75,6 +75,7 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
                             backgroundColor: shadePrimaryColor,
                             child: IconButton(
                               onPressed: () {
+                                
                                 if (queryController.text.isEmpty) {
                                   return;
                                 }
@@ -101,19 +102,23 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
                       future: _future,
                       builder: (context,
                           AsyncSnapshot<QuerySnapshot<ChatUser>?> snapshot) {
-                        if (snapshot.hasData) {
+                        if (snapshot.connectionState ==
+                            ConnectionState.waiting) {
+                          return Column(
+                            children: const [
+                              UserChatLoading(),
+                            ],
+                          );
+                        } else if (snapshot.hasData) {
                           return ListView.builder(
                               itemCount: snapshot.data!.size,
                               itemBuilder: (ctx, index) {
                                 return GestureDetector(
                                   onTap: () {
-                                    Navigator.of(context)
-                                        .push(MaterialPageRoute(
-                                            builder: (context) => ViewChat(
-                                                  receiver: snapshot
-                                                      .data!.docs[index]
-                                                      .data(),
-                                                )));
+                                    Navigator.of(context).pushNamed(
+                                        ViewChat.routeName,
+                                        arguments:
+                                            snapshot.data!.docs[index].data());
                                   },
                                   child: UserSearchResult(
                                     user: snapshot.data!.docs[index].data(),

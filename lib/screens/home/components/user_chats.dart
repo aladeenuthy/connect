@@ -1,6 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/screens/home/components/user_chat.dart';
-import 'package:connect/utils/chat_helper.dart';
+import 'package:connect/helpers/chat_helper.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
@@ -19,14 +19,16 @@ class UserChats extends StatelessWidget {
         bodyContent: StreamBuilder<QuerySnapshot<Message>>(
           stream: ChatHelper.getLastMessages(),
           builder: (context, snapshot) {
-            if (snapshot.hasData) {
+            if (snapshot.connectionState == ConnectionState.waiting) {
+              return  Container();
+            } else if (snapshot.hasData) {
               return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (ctx, index) {
                     return UserChat(
-                        isUser: isMe(snapshot.data!.docs[index].data().senderId, FirebaseAuth.instance.currentUser!.uid),
-                        message:
-                            snapshot.data!.docs[index].data());
+                        isUser: isMe(snapshot.data!.docs[index].data().senderId,
+                            FirebaseAuth.instance.currentUser!.uid),
+                        message: snapshot.data!.docs[index].data());
                   });
             } else {
               return Container();

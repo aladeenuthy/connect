@@ -1,5 +1,5 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connect/utils/chat_helper.dart';
+import 'package:connect/helpers/chat_helper.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';

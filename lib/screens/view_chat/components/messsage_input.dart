@@ -1,19 +1,16 @@
 import 'dart:io';
-
-import 'package:cloud_firestore/cloud_firestore.dart';
-import 'package:connect/models/message.dart';
-import 'package:connect/utils/chat_helper.dart';
+import 'package:connect/helpers/chat_helper.dart';
 import 'package:connect/utils/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 import '../../../components/image_preview.dart';
+import '../../../models/user.dart';
 import '../../../utils/constants.dart';
 
 class MessageInput extends StatefulWidget {
-  final String receiverId;
-  const MessageInput({Key? key, required this.receiverId}) : super(key: key);
+  final ChatUser receiver;
+  const MessageInput({Key? key, required this.receiver}) : super(key: key);
 
   @override
   State<MessageInput> createState() => _MessageInputState();
@@ -26,7 +23,7 @@ class _MessageInputState extends State<MessageInput> {
     super.dispose();
     _messageController.dispose();
   }
-
+  
   void _pickImage(ImageSource source) async {
     final ImagePicker _picker = ImagePicker();
     final image = await _picker.pickImage(
@@ -41,11 +38,11 @@ class _MessageInputState extends State<MessageInput> {
               builder: (context) => ImagePreview(image: imageFile)))
           .then((value) {
         if (value) {
-          ChatHelper.sendMessage('', 'image', widget.receiverId, imageFile);
+          ChatHelper.sendMessage('', 'image', widget.receiver, imageFile);
         }
       });
     } else {
-      ChatHelper.sendMessage('', 'image', widget.receiverId, imageFile);
+      ChatHelper.sendMessage('', 'image', widget.receiver, imageFile);
     }
   }
 
@@ -56,7 +53,7 @@ class _MessageInputState extends State<MessageInput> {
     await ChatHelper.sendMessage(
       _messageController.text.trim(),
       'text',
-      widget.receiverId,
+      widget.receiver,
     );
     _messageController.clear();
   }

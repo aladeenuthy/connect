@@ -1,21 +1,30 @@
 import 'package:cached_network_image/cached_network_image.dart';
-
 import 'package:connect/screens/home/components/user_chats.dart';
 import 'package:connect/screens/home/components/users.dart';
 import 'package:connect/screens/profile/profile_screen.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:connect/helpers/onesignal_helper.dart';
+
 import 'package:flutter/material.dart';
 import "package:connect/utils/constants.dart";
 
-
-class ChatsScreen extends StatelessWidget {
+class ChatsScreen extends StatefulWidget {
   const ChatsScreen({Key? key}) : super(key: key);
-  static const routeName = '/chats-screen';
+  static const routeName = '/';
+  @override
+  State<ChatsScreen> createState() => _ChatsScreenState();
+}
+
+class _ChatsScreenState extends State<ChatsScreen> {
+  @override
+  void initState() {
+    super.initState();
+    OneSignalHelper.initialize();
+  }
 
   @override
   Widget build(BuildContext context) {
-
     final deviceHeight = getDeviceHeight(context);
     return Scaffold(
         body: SafeArea(
@@ -39,13 +48,14 @@ class ChatsScreen extends StatelessWidget {
                           GestureDetector(
                             onTap: () {
                               Navigator.of(context)
-                                  .popAndPushNamed(ProfileScreen.routeName);
+                                  .pushNamed(ProfileScreen.routeName);
                             },
                             child: CircleAvatar(
                                 radius: 25,
                                 backgroundColor: shadePrimaryColor,
                                 backgroundImage: CachedNetworkImageProvider(
-                                    FirebaseAuth.instance.currentUser!.photoURL ??
+                                    FirebaseAuth
+                                            .instance.currentUser!.photoURL ??
                                         "")),
                           ),
                         ],

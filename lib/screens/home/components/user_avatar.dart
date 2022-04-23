@@ -11,22 +11,20 @@ class UserAvatar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    
     return GestureDetector(
       onTap: () {
-        Navigator.of(context).push(MaterialPageRoute(
-            builder: (context) =>  ViewChat(
-                  receiver: user,
-                )));
+        Navigator.of(context).pushNamed(ViewChat.routeName, arguments: user);
       },
       child: Container(
         margin: const EdgeInsets.only(right: 10),
         child: CircleAvatar(
-          radius: 30,
-          backgroundColor: shadePrimaryColor,
-          backgroundImage: CachedNetworkImageProvider(user.profileUrl),
-          child: Text(user.username, style: const TextStyle(color: Colors.black),)
-        ),
+            radius: 30,
+            backgroundColor: shadePrimaryColor,
+            backgroundImage: CachedNetworkImageProvider(user.profileUrl),
+            child: Text(
+              user.username,
+              style: const TextStyle(color: Colors.black),
+            )),
       ),
     );
   }

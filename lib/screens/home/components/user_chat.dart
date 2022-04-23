@@ -1,19 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/screens/home/components/unread_badge.dart';
-import 'package:connect/utils/helpers.dart';
+import 'package:connect/helpers/helpers.dart';
 import 'package:connect/utils/services.dart';
 import 'package:connect/models/models.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
+import '../../../components/user_chat_loading.dart';
 import '../../../utils/constants.dart';
 import '../../view_chat/view_chat.dart';
 
 class UserChat extends StatefulWidget {
   final bool isUser;
   final Message message;
-  const UserChat({Key? key, required this.isUser,  required this.message}) : super(key: key);
+  const UserChat({Key? key, required this.isUser, required this.message})
+      : super(key: key);
 
   @override
   State<UserChat> createState() => _UserChatState();
@@ -21,11 +22,11 @@ class UserChat extends StatefulWidget {
 
 class _UserChatState extends State<UserChat> {
   late Future<ChatUser> _future;
-  
+
   @override
   void initState() {
     super.initState();
-    
+
     _future = UserHelper.getUser(
         widget.isUser ? widget.message.receiverId : widget.message.senderId);
   }
@@ -36,19 +37,17 @@ class _UserChatState extends State<UserChat> {
         future: _future,
         builder: (context, AsyncSnapshot<ChatUser> snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) {
-            return Container();
+            return const UserChatLoading();
+            
           } else if (snapshot.hasData) {
             return GestureDetector(
               onTap: () {
-                Navigator.of(context).push(MaterialPageRoute(
-                    builder: (context) => ViewChat(
-                          receiver: snapshot.data!,
-                        )));
+                Navigator.of(context)
+                    .pushNamed(ViewChat.routeName, arguments: snapshot.data);
               },
               child: Container(
-                
                 margin: const EdgeInsets.symmetric(vertical: 8),
-                height: 70,
+                height: 80,
                 width: double.infinity,
                 child: Row(children: [
                   CircleAvatar(
@@ -84,15 +83,22 @@ class _UserChatState extends State<UserChat> {
                           const SizedBox(
                             width: 5,
                           ),
-                        widget.message.contentType == 'text' ? Text(
-                              widget.message.content.length > 20
-                                  ? widget.message.content.substring(0, 10) +
-                                      "..."
-                                  : widget.message.content,
-                              style: const TextStyle(
-                                color: shadePrimaryColor,
-                                fontSize: 16,
-                              )): const Icon(Icons.photo_album, color: kPrimaryColor, size: 20,),
+                          widget.message.contentType == 'text'
+                              ? Text(
+                                  widget.message.content.length > 20
+                                      ? widget.message.content
+                                              .substring(0, 10) +
+                                          "..."
+                                      : widget.message.content,
+                                  style: const TextStyle(
+                                    color: shadePrimaryColor,
+                                    fontSize: 16,
+                                  ))
+                              : const Icon(
+                                  Icons.photo_album,
+                                  color: kPrimaryColor,
+                                  size: 20,
+                                ),
                         ],
                       )
                     ],
@@ -101,8 +107,8 @@ class _UserChatState extends State<UserChat> {
                   Column(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      const Text("12:30",
-                          style: TextStyle(
+                      Text(widget.message.date,
+                          style: const TextStyle(
                             color: shadePrimaryColor,
                             fontSize: 14,
                           )),

@@ -37,12 +37,15 @@ class _LoginScreenState extends State<LoginScreen> {
   }
 
   void _loginWithEmailAndPassword() async {
-    if (_emailController.text.isEmpty || _passwordController.text.isEmpty) {
+    if (_emailController.text.trim().isEmpty ||
+        _passwordController.text.trim().isEmpty) {
       return;
     }
-    showLoadingSpinner(context);
     FocusScope.of(context).unfocus();
-    final isLoggedIn = await context.read<AuthProvider>().signIn(_emailController.text, _passwordController.text, context);
+    showLoadingSpinner(context);
+    final isLoggedIn = await context
+        .read<AuthProvider>()
+        .signIn(_emailController.text, _passwordController.text);
     Navigator.of(context).pop(); // pop loading spinner
     if (!isLoggedIn) {
       return;
@@ -53,7 +56,8 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _loginWithGoogle() async {
     FocusScope.of(context).unfocus();
-    final isLoggedIn = await context.read<AuthProvider>().signInWithGoogle(context);
+    final isLoggedIn =
+        await context.read<AuthProvider>().signInWithGoogle();
     if (!isLoggedIn) {
       return; //not successful
     }
@@ -64,11 +68,19 @@ class _LoginScreenState extends State<LoginScreen> {
             ?.isNewUser ??
         false) {
       Navigator.of(context).popAndPushNamed(
-          AddUserDetails.routeName); //if new user show add detail screen
+          AddUserDetails.routeName); //if new gogle user show add detail screen
       return;
     }
     Navigator.of(context).popAndPushNamed(
         ChatsScreen.routeName); //if not new user push mf to the home screen
+  }
+
+  @override
+  void dispose() {
+  
+    super.dispose();
+    _emailController.dispose();
+    _passwordController.dispose();
   }
 
   @override

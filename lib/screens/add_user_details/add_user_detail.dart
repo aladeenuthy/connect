@@ -27,8 +27,8 @@ class _AddUserDetailsState extends State<AddUserDetails> {
     }
     showLoadingSpinner(context);
     final isDone = await context.read<AuthProvider>().saveUserDetails(
-        _pickedImage as File, _usernameController.text.trim(), context);
-    Navigator.of(context).pop();
+        _pickedImage as File, _usernameController.text.trim());
+    Navigator.of(context).pop(); //pop loading spinner
     if (!isDone) {
       return;
     }
@@ -52,13 +52,19 @@ class _AddUserDetailsState extends State<AddUserDetails> {
           setState(() {
             _pickedImage = imageFile;
           });
+          return;
         }
       });
-    } else {
-      setState(() {
-        _pickedImage = imageFile;
-      });
     }
+    setState(() {
+      _pickedImage = imageFile;
+    });
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    _usernameController.dispose();
   }
 
   @override
@@ -104,8 +110,7 @@ class _AddUserDetailsState extends State<AddUserDetails> {
                           backgroundColor: Colors.black,
                           child: IconButton(
                             onPressed: () {
-                              showImageOptions(
-                                  context, _pickImage);
+                              showImageOptions(context, _pickImage);
                             },
                             icon: const Icon(
                               Icons.camera_alt,

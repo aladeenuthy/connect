@@ -49,7 +49,7 @@ class _SignupScreenState extends State<SignupScreen> {
     final isSignedUP = await context
         .read<AuthProvider>()
         .signUpWithEmailAndPassword(
-            _authData['email']!.trim(), _authData['password']!.trim(), context);
+            _authData['email']!.trim(), _authData['password']!.trim(),);
     Navigator.of(context).pop(); // pop loading spinner
     if (!isSignedUP) {
       return; //not sucessful
@@ -58,6 +58,11 @@ class _SignupScreenState extends State<SignupScreen> {
         .popAndPushNamed(AddUserDetails.routeName); //successful
   }
 
+  @override
+  void dispose() {
+    super.dispose();
+    _formKey.currentState?.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {

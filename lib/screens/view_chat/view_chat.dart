@@ -1,7 +1,7 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connect/screens/view_chat/components/messages.dart';
 import 'package:connect/screens/view_chat/components/messsage_input.dart';
-import 'package:connect/utils/chat_helper.dart';
+import 'package:connect/helpers/chat_helper.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -79,7 +79,7 @@ class _ViewChatState extends State<ViewChat> {
                 ),
                 Expanded(
                     child: MessageInput(
-                  receiverId: widget.receiver.userId,
+                  receiver: widget.receiver,
                 ))
               ]),
             ),

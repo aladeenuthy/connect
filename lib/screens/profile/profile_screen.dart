@@ -1,5 +1,4 @@
 import 'package:cached_network_image/cached_network_image.dart';
-import 'package:connect/screens/home/chats_screen.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -25,7 +24,7 @@ class ProfileScreen extends StatelessWidget {
         splashColor: kPrimaryColor,
         backgroundColor: shadePrimaryColor,
         onPressed: () {
-          Navigator.of(context).popAndPushNamed(ChatsScreen.routeName);
+          Navigator.of(context).pop();
         },
       ),
       body: SizedBox(
@@ -73,11 +72,12 @@ class ProfileScreen extends StatelessWidget {
                 onPressed: () async {
                   final isLoggedOut =
                       await Provider.of<AuthProvider>(context, listen: false)
-                          .signOut(context);
+                          .signOut();
                   if (!isLoggedOut) {
                     return;
                   }
-                  Navigator.of(context).popAndPushNamed(LoginScreen.routeName);
+                  Navigator.of(context).popUntil((route) => false);
+                  Navigator.of(context).pushNamed(LoginScreen.routeName);
                 },
                 child: const Text(
                   "Sign out",
