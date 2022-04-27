@@ -20,8 +20,8 @@ class _MessageInputState extends State<MessageInput> {
   final _messageController = TextEditingController();
   @override
   void dispose() {
-    super.dispose();
     _messageController.dispose();
+    super.dispose();
   }
   
   void _pickImage(ImageSource source) async {
@@ -50,12 +50,13 @@ class _MessageInputState extends State<MessageInput> {
     if (_messageController.text.isEmpty) {
       return;
     }
-    await ChatHelper.sendMessage(
+    ChatHelper.sendMessage(
       _messageController.text.trim(),
       'text',
       widget.receiver,
     );
     _messageController.clear();
+    
   }
 
   @override
@@ -73,7 +74,7 @@ class _MessageInputState extends State<MessageInput> {
               prefixIcon: IconButton(
                 onPressed: () {
                   FocusScope.of(context).unfocus();
-                  showImageOptions(context, _pickImage);
+                  showImageOptions(_pickImage);
                 },
                 icon: const Icon(
                   Icons.add,

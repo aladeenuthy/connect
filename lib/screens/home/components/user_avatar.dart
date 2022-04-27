@@ -21,10 +21,7 @@ class UserAvatar extends StatelessWidget {
             radius: 30,
             backgroundColor: shadePrimaryColor,
             backgroundImage: CachedNetworkImageProvider(user.profileUrl),
-            child: Text(
-              user.username,
-              style: const TextStyle(color: Colors.black),
-            )),
+          ),
       ),
     );
   }

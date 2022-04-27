@@ -1,33 +1,20 @@
 import 'package:cached_network_image/cached_network_image.dart';
 import 'package:connect/screens/view_chat/components/messages.dart';
 import 'package:connect/screens/view_chat/components/messsage_input.dart';
-import 'package:connect/helpers/chat_helper.dart';
 import 'package:connect/utils/constants.dart';
 import 'package:connect/utils/services.dart';
-import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-
 import '../../models/user.dart';
 
-class ViewChat extends StatefulWidget {
+class ViewChat extends StatelessWidget {
   final ChatUser receiver;
   const ViewChat({Key? key, required this.receiver}) : super(key: key);
   static const routeName = "/viewchat";
 
-  @override
-  State<ViewChat> createState() => _ViewChatState();
-}
 
-class _ViewChatState extends State<ViewChat> {
   @override
-  void initState() {
-    super.initState();
-    ChatHelper.markLastMessageAsRead(getConvoId(
-        FirebaseAuth.instance.currentUser!.uid, widget.receiver.userId));
-  }
-
-  AppBar appbar() {
-    return AppBar(
+  Widget build(BuildContext context) {
+    final appBar = AppBar(
       flexibleSpace: Padding(
         padding: const EdgeInsets.only(top: 8),
         child: Row(mainAxisAlignment: MainAxisAlignment.start, children: [
@@ -38,11 +25,11 @@ class _ViewChatState extends State<ViewChat> {
               radius: 22,
               backgroundColor: shadePrimaryColor,
               backgroundImage:
-                  CachedNetworkImageProvider(widget.receiver.profileUrl)),
+                  CachedNetworkImageProvider(receiver.profileUrl)),
           const SizedBox(
             width: 7,
           ),
-          Text(widget.receiver.username,
+          Text(receiver.username,
               style: const TextStyle(
                   color: shadePrimaryColor,
                   fontSize: 19,
@@ -52,16 +39,12 @@ class _ViewChatState extends State<ViewChat> {
       backgroundColor: Colors.transparent,
       elevation: 0,
     );
-  }
-
-  @override
-  Widget build(BuildContext context) {
     final deviceHeight =
-        getDeviceHeight(context) - appbar().preferredSize.height;
+        getDeviceHeight(context) - appBar.preferredSize.height;
     return SafeArea(
       child: Scaffold(
         resizeToAvoidBottomInset: false,
-        appBar: appbar(),
+        appBar: appBar,
         body: SingleChildScrollView(
           reverse: true,
           child: Padding(
@@ -75,11 +58,11 @@ class _ViewChatState extends State<ViewChat> {
                 ),
                 Messages(
                   size: deviceHeight,
-                  receiver: widget.receiver,
+                  receiver: receiver,
                 ),
                 Expanded(
                     child: MessageInput(
-                  receiver: widget.receiver,
+                  receiver: receiver,
                 ))
               ]),
             ),

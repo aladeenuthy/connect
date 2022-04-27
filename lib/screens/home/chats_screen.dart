@@ -11,7 +11,7 @@ import "package:connect/utils/constants.dart";
 
 class ChatsScreen extends StatefulWidget {
   const ChatsScreen({Key? key}) : super(key: key);
-  static const routeName = '/';
+  static const routeName = '/chatscreen';
   @override
   State<ChatsScreen> createState() => _ChatsScreenState();
 }

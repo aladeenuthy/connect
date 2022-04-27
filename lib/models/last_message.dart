@@ -1,17 +1,18 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'user.dart';
 
 import 'abstract_convo.dart';
 
-class Message extends Convo {
-  final String id;
-  Message(
-      {required this.id,
-      required String senderId,
+class LastMessage extends Convo {
+  final ChatUser receiver;
+  LastMessage(
+      {required String senderId,
       required String receiverId,
       required String contentType,
       required String content,
       required bool isRead,
-      required Timestamp timestamp})
+      required Timestamp timestamp,
+      required this.receiver})
       : super(
             senderId: senderId,
             receiverId: receiverId,
@@ -19,16 +20,16 @@ class Message extends Convo {
             content: content,
             isRead: isRead,
             timestamp: timestamp);
-
-  factory Message.fromFirestore(Map<String, dynamic> document, String id) {
-    return Message(
-        id: id,
+  factory LastMessage.fromFirestore(
+      Map<String, dynamic> document, ChatUser receiver) {
+    return LastMessage(
         senderId: document['senderId'],
         receiverId: document['receiverId'],
         contentType: document['contentType'],
         content: document['content'],
         isRead: document['isRead'],
-        timestamp: document['timestamp']);
+        timestamp: document['timestamp'],
+        receiver: receiver
+        );
   }
-
 }

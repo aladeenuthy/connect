@@ -8,7 +8,7 @@ double getDeviceHeight(BuildContext context) {
       MediaQuery.of(context).padding.top;
 }
 
-void showLoadingSpinner(BuildContext context) {
+void showLoadingSpinner() {
   AlertDialog alert = AlertDialog(
     content: Row(
       children: const [
@@ -20,7 +20,7 @@ void showLoadingSpinner(BuildContext context) {
   );
   showDialog(
     barrierDismissible: false,
-    context: context,
+    context: KeyHelper.navKey.currentContext!,
     builder: (context) {
       return alert;
     },
@@ -45,7 +45,7 @@ String getConvoId(String id1, id2) {
   return '$id2-$id1';
 }
 
-void showImageOptions(BuildContext context, Function imageCallBack) {
+void showImageOptions(Function imageCallBack) {
   AlertDialog alert = AlertDialog(
     content: SizedBox(
       height: 130,
@@ -60,7 +60,7 @@ void showImageOptions(BuildContext context, Function imageCallBack) {
               style: TextStyle(color: kPrimaryColor, fontSize: 17),
             ),
             onTap: () {
-              Navigator.of(context).pop();
+              KeyHelper.navKey.currentState!.pop();
               imageCallBack(ImageSource.camera);
             }),
         const Divider(
@@ -73,7 +73,7 @@ void showImageOptions(BuildContext context, Function imageCallBack) {
               style: TextStyle(color: kPrimaryColor, fontSize: 17),
             ),
             onTap: () {
-              Navigator.of(context).pop();
+              KeyHelper.navKey.currentState!.pop();
               imageCallBack(ImageSource.gallery);
             })
       ]),
@@ -81,8 +81,8 @@ void showImageOptions(BuildContext context, Function imageCallBack) {
   );
   showDialog(
     barrierDismissible: true,
-    context: context,
-    builder: (context) {
+    context: KeyHelper.navKey.currentContext!,
+    builder: (ctx) {
       return alert;
     },
   );

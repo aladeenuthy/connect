@@ -3,138 +3,100 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/screens/home/components/unread_badge.dart';
 import 'package:connect/helpers/helpers.dart';
 import 'package:connect/utils/services.dart';
-import 'package:connect/models/models.dart';
+
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
-import '../../../components/user_chat_loading.dart';
-import '../../../utils/constants.dart';
-import '../../view_chat/view_chat.dart';
 
-class UserChat extends StatefulWidget {
+import '../../../models/last_message.dart';
+import '../../../utils/constants.dart';
+
+
+class UserChat extends StatelessWidget {
   final bool isUser;
-  final Message message;
-  const UserChat({Key? key, required this.isUser, required this.message})
+  final LastMessage lastMessage;
+  const UserChat({Key? key, required this.isUser, required this.lastMessage})
       : super(key: key);
 
   @override
-  State<UserChat> createState() => _UserChatState();
-}
-
-class _UserChatState extends State<UserChat> {
-  late Future<ChatUser> _future;
-
-  @override
-  void initState() {
-    super.initState();
-
-    _future = UserHelper.getUser(
-        widget.isUser ? widget.message.receiverId : widget.message.senderId);
-  }
-
-  @override
   Widget build(BuildContext context) {
-    return FutureBuilder(
-        future: _future,
-        builder: (context, AsyncSnapshot<ChatUser> snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            return const UserChatLoading();
-            
-          } else if (snapshot.hasData) {
-            return GestureDetector(
-              onTap: () {
-                Navigator.of(context)
-                    .pushNamed(ViewChat.routeName, arguments: snapshot.data);
-              },
-              child: Container(
-                margin: const EdgeInsets.symmetric(vertical: 8),
-                height: 80,
-                width: double.infinity,
-                child: Row(children: [
-                  CircleAvatar(
-                    radius: 40,
-                    backgroundColor: shadePrimaryColor,
-                    backgroundImage:
-                        CachedNetworkImageProvider(snapshot.data!.profileUrl),
-                  ),
-                  const SizedBox(
-                    width: 7,
-                  ),
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(snapshot.data!.username,
-                          style: const TextStyle(
-                              color: kPrimaryColor,
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold)),
-                      const SizedBox(
-                        height: 7,
+    final receiver = lastMessage.receiver;
+    return Container(
+      margin: const EdgeInsets.symmetric(vertical: 8),
+      height: 80,
+      width: double.infinity,
+      child: Row(children: [
+        CircleAvatar(
+          radius: 35,
+          backgroundColor: shadePrimaryColor,
+          backgroundImage: CachedNetworkImageProvider(receiver.profileUrl),
+        ),
+        const SizedBox(
+          width: 7,
+        ),
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            Text(receiver.username,
+                style: const TextStyle(
+                    color: kPrimaryColor,
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold)),
+            const SizedBox(
+              height: 7,
+            ),
+            Row(
+              children: [
+                if (isUser)
+                  Icon(lastMessage.isRead ? Icons.done_all : Icons.done,
+                      color: kPrimaryColor, size: 15),
+                const SizedBox(
+                  width: 5,
+                ),
+                lastMessage.contentType == 'text'
+                    ? Text(
+                        lastMessage.content.length > 20
+                            ? lastMessage.content.substring(0, 10) + "..."
+                            : lastMessage.content,
+                        style: const TextStyle(
+                          color: shadePrimaryColor,
+                          fontSize: 16,
+                        ))
+                    : const Icon(
+                        Icons.photo_album,
+                        color: kPrimaryColor,
+                        size: 20,
                       ),
-                      Row(
-                        children: [
-                          if (widget.isUser)
-                            Icon(
-                                widget.message.isRead
-                                    ? Icons.done_all
-                                    : Icons.done,
-                                color: kPrimaryColor,
-                                size: 15),
-                          const SizedBox(
-                            width: 5,
-                          ),
-                          widget.message.contentType == 'text'
-                              ? Text(
-                                  widget.message.content.length > 20
-                                      ? widget.message.content
-                                              .substring(0, 10) +
-                                          "..."
-                                      : widget.message.content,
-                                  style: const TextStyle(
-                                    color: shadePrimaryColor,
-                                    fontSize: 16,
-                                  ))
-                              : const Icon(
-                                  Icons.photo_album,
-                                  color: kPrimaryColor,
-                                  size: 20,
-                                ),
-                        ],
-                      )
-                    ],
-                  ),
-                  const Spacer(),
-                  Column(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      Text(widget.message.date,
-                          style: const TextStyle(
-                            color: shadePrimaryColor,
-                            fontSize: 14,
-                          )),
-                      if (widget.message.receiverId ==
-                              FirebaseAuth.instance.currentUser!.uid &&
-                          !widget.message.isRead)
-                        StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                            stream: ChatHelper.numberOfUnread(getConvoId(
-                                FirebaseAuth.instance.currentUser!.uid,
-                                snapshot.data!.userId)),
-                            builder: (context, snapshot) {
-                              if (snapshot.hasData) {
-                                return UnreadBadge(
-                                    count:
-                                        snapshot.data!.docs.length.toString());
-                              } else {
-                                return const Text("");
-                              }
-                            })
-                    ],
-                  )
-                ]),
-              ),
-            );
-          }
-          return Container();
-        });
+              ],
+            )
+          ],
+        ),
+        const Spacer(),
+        Column(
+          mainAxisAlignment: MainAxisAlignment.spaceAround,
+          children: [
+            Text(lastMessage.date,
+                style: const TextStyle(
+                  color: shadePrimaryColor,
+                  fontSize: 14,
+                )),
+            if (lastMessage.receiverId ==
+                    FirebaseAuth.instance.currentUser!.uid &&
+                !lastMessage.isRead)
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                  stream: ChatHelper.numberOfUnread(getConvoId(
+                      FirebaseAuth.instance.currentUser!.uid, receiver.userId)),
+                  builder: (context, snapshot) {
+                    if (snapshot.hasData && snapshot.data!.docs.isNotEmpty) {
+                      return UnreadBadge(
+                          count: snapshot.data!.docs.length.toString());
+                    } else {
+                      return const Text("");
+                    }
+                  })
+          ],
+        )
+      ]),
+    );
   }
 }

@@ -5,8 +5,10 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 
 import '../../../components/body_container.dart';
-import '../../../models/message.dart';
+import '../../../components/user_chat_loading.dart';
+import '../../../models/last_message.dart';
 import '../../../utils/services.dart';
+import '../../view_chat/view_chat.dart';
 
 class UserChats extends StatelessWidget {
   final double deviceHeight;
@@ -16,19 +18,32 @@ class UserChats extends StatelessWidget {
   Widget build(BuildContext context) {
     return BodyContainer(
         size: deviceHeight,
-        bodyContent: StreamBuilder<QuerySnapshot<Message>>(
+        bodyContent: StreamBuilder<QuerySnapshot<LastMessage>>(
           stream: ChatHelper.getLastMessages(),
           builder: (context, snapshot) {
             if (snapshot.connectionState == ConnectionState.waiting) {
-              return  Container();
+              return ListView(children: const[
+                UserChatLoading(),
+                UserChatLoading(),
+                UserChatLoading(),
+                UserChatLoading(),
+                UserChatLoading(),
+                UserChatLoading(),
+              ]);
             } else if (snapshot.hasData) {
               return ListView.builder(
                   itemCount: snapshot.data!.docs.length,
                   itemBuilder: (ctx, index) {
-                    return UserChat(
-                        isUser: isMe(snapshot.data!.docs[index].data().senderId,
-                            FirebaseAuth.instance.currentUser!.uid),
-                        message: snapshot.data!.docs[index].data());
+                    return GestureDetector(
+                      onTap: () {
+                        Navigator.of(context).pushNamed(ViewChat.routeName,
+                            arguments: snapshot.data!.docs[index].data().receiver);
+                      },
+                      child: UserChat(
+                          isUser: isMe(snapshot.data!.docs[index].data().senderId,
+                              FirebaseAuth.instance.currentUser!.uid),
+                          lastMessage: snapshot.data!.docs[index].data()),
+                    );
                   });
             } else {
               return Container();

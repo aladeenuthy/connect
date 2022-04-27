@@ -26,10 +26,11 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
   );
   @override
   void dispose() {
-    super.dispose();
     queryController.dispose();
+    super.dispose();
   }
 
+  
   @override
   Widget build(BuildContext context) {
     final deviceHeight =
@@ -75,7 +76,6 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
                             backgroundColor: shadePrimaryColor,
                             child: IconButton(
                               onPressed: () {
-                                
                                 if (queryController.text.isEmpty) {
                                   return;
                                 }
@@ -110,6 +110,13 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
                             ],
                           );
                         } else if (snapshot.hasData) {
+                          if (snapshot.data!.docs.isEmpty) {
+                            return Container(
+                            alignment: Alignment.center,
+                              child:
+                                  Text("no result for ${queryController.text}"),
+                            );
+                          }
                           return ListView.builder(
                               itemCount: snapshot.data!.size,
                               itemBuilder: (ctx, index) {
@@ -125,11 +132,8 @@ class _AddFriendsScreenState extends State<AddFriendsScreen> {
                                   ),
                                 );
                               });
-                        } else {
-                          return const Center(
-                            child: Text("no results found"),
-                          );
                         }
+                        return const Text("");
                       },
                     ))
         ]),

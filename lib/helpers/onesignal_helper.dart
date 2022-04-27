@@ -13,7 +13,6 @@ class OneSignalHelper {
         (OSNotificationReceivedEvent event) {
       Route? routeSettings;
 
-      
       //to get current routename
       KeyHelper.navKey.currentState!.popUntil(
         (route) {
@@ -22,9 +21,9 @@ class OneSignalHelper {
         },
       );
 
-
       // if user is in chatscreen or user is not authenticated do not show notifications
       if (routeSettings!.settings.name == ChatsScreen.routeName ||
+          routeSettings!.settings.name == '/' ||
           FirebaseAuth.instance.currentUser == null) {
         event.complete(null); //  do not show notifications
         return;
@@ -32,19 +31,21 @@ class OneSignalHelper {
       // if user is already in chat of the notification sender  do not show notifications
       ChatUser user = routeSettings!.settings.arguments as ChatUser;
       if (routeSettings!.settings.name == ViewChat.routeName &&
-          event.notification.title == user.username) {
+          event.notification.additionalData?['userId'] == user.userId) {
         event.complete(null); //  do not show notifications
         return;
       }
       event.complete(event.notification);
     });
-    // called whern notification is clicked
+
+    // called when notification is clicked
     OneSignal.shared
         .setNotificationOpenedHandler((OSNotificationOpenedResult result) {
-      
+
       // pop mf out to home screen and push mf to the chat
-      KeyHelper.navKey.currentState!
-          .popUntil((ModalRoute.withName(ChatsScreen.routeName)));
+      KeyHelper.navKey.currentState!.popUntil((route) =>
+          false); //doing this because of error in route names, will solve later
+      KeyHelper.navKey.currentState!.pushNamed(ChatsScreen.routeName);
       KeyHelper.navKey.currentState!.pushNamed(ViewChat.routeName,
           arguments: ChatUser.fromFirestore(
               result.notification.additionalData as Map<String, dynamic>));

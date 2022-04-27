@@ -16,6 +16,7 @@ class MessageBubble extends StatelessWidget {
   Widget build(BuildContext context) {
     final isUser = isMe(message.senderId, FirebaseAuth.instance.currentUser!.uid);
     if (!message.isRead && message.receiverId == FirebaseAuth.instance.currentUser!.uid) {
+      ChatHelper.markLastMessageAsRead(convoId);
       ChatHelper.markMessageAsRead(convoId, message.id);
     }
     return Row(

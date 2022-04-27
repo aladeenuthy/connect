@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:connect/helpers/helpers.dart';
 import 'package:connect/helpers/onesignal_helper.dart';
+import 'package:connect/models/last_message.dart';
 import 'package:connect/models/models.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_auth/firebase_auth.dart';
@@ -26,13 +27,21 @@ class ChatHelper {
   }
 
   // get last messages to display preview of each convo with each user
-  static Stream<QuerySnapshot<Message>> getLastMessages() {
+  static Stream<QuerySnapshot<LastMessage>> getLastMessages() {
     return _accessToDB
         .where('users', arrayContains: FirebaseAuth.instance.currentUser!.uid)
-        .withConverter<Message>(
-            fromFirestore: ((snapshot, _) =>
-                Message.fromFirestore(snapshot.data()!['last_message'], '')),
-            toFirestore: (message, _) => message.toJson())
+        .withConverter<LastMessage>(
+            fromFirestore: ((snapshot, _) {
+              final Map<String, dynamic> lastMessage =
+                  snapshot.data()!['last_message'];
+              final receiver = ChatUser.fromFirestore(
+                  FirebaseAuth.instance.currentUser!.uid ==
+                          lastMessage['senderId']
+                      ? lastMessage['receiverCred']
+                      : lastMessage['senderCred']);
+              return LastMessage.fromFirestore(lastMessage, receiver);
+            }),
+            toFirestore: (lastMessage, _) => lastMessage.toJson())
         .orderBy('last_message.timestamp', descending: true)
         .snapshots();
   }
@@ -61,16 +70,26 @@ class ChatHelper {
         content: content,
         isRead: false,
         timestamp: Timestamp.now());
+
     final currentUser = await UserHelper.getUser(FirebaseAuth
         .instance
         .currentUser!
         .uid); // so when other user clicks notification it directly take user to view chat
-    // final batchWrite = FirebaseFirestore.instance.batch();
-    await _messagesRef(convoId).add(message);
-    await _accessToDB.doc(convoId).set({
-      'last_message': message.toJson(),
+    final batch = FirebaseFirestore.instance.batch();
+    final docRef = _accessToDB.doc(convoId).collection('chats').doc();
+
+    final lastMessageJson = message.toJson();
+    lastMessageJson.addAll({
+      'senderCred': currentUser.toJson(),
+      'receiverCred': receiver.toJson()
+    });
+    // combining write operations to create documents at once
+    batch.set(docRef, message.toJson());
+    batch.set(_accessToDB.doc(convoId), {
+      'last_message': lastMessageJson,
       'users': [message.senderId, message.receiverId]
     });
+    await batch.commit();
     await OneSignalHelper.sendPushNotification(
         content: contentType == 'image' ? 'sent an image' : content,
         receiverDeviceToken: receiver.deviceToken,
@@ -102,7 +121,9 @@ class ChatHelper {
         "contentType": lastMessage['contentType'],
         "content": lastMessage['content'],
         "isRead": true,
-        'timestamp': lastMessage['timestamp']
+        'timestamp': lastMessage['timestamp'],
+        'senderCred': lastMessage['senderCred'],
+        'receiverCred': lastMessage['receiverCred'],
       },
       'users': [lastMessage['senderId'], lastMessage['receiverId']]
     });

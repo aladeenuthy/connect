@@ -69,7 +69,6 @@ class MyApp extends StatelessWidget {
         onGenerateRoute: (settings) {
           if (settings.name == ViewChat.routeName) {
             final value = settings.arguments as ChatUser;
-            
             return MaterialPageRoute(
                 settings: settings,
                 builder: (ctx) => ViewChat(receiver: value));

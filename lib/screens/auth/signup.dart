@@ -45,7 +45,7 @@ class _SignupScreenState extends State<SignupScreen> {
     }
     FocusScope.of(context).unfocus();
     _formKey.currentState!.save();
-    showLoadingSpinner(context);
+    showLoadingSpinner();
     final isSignedUP = await context
         .read<AuthProvider>()
         .signUpWithEmailAndPassword(
@@ -60,8 +60,8 @@ class _SignupScreenState extends State<SignupScreen> {
 
   @override
   void dispose() {
-    super.dispose();
     _formKey.currentState?.dispose();
+    super.dispose();    
   }
 
   @override

@@ -29,7 +29,7 @@ class Users extends StatelessWidget {
                   child: Container(
                     margin: const EdgeInsets.only(right: 10),
                     child: const CircleAvatar(
-                      radius: 30,
+                      radius: 35,
                       backgroundColor: shadePrimaryColor,
                       child: Icon(
                         Icons.person_add,

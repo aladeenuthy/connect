@@ -5,9 +5,10 @@ import 'package:connect/helpers/onesignal_helper.dart';
 import 'package:connect/utils/services.dart';
 import 'package:firebase_storage/firebase_storage.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+
 import 'package:google_sign_in/google_sign_in.dart';
 
-class AuthProvider {
+class AuthProvider  {
   final _googleSignIn = GoogleSignIn(); //google sign in obj
   GoogleSignIn get googleSignIn {
     return _googleSignIn;
@@ -84,7 +85,7 @@ class AuthProvider {
       final url = await ref.getDownloadURL();
       await auth.currentUser?.updateDisplayName(userName);
       await auth.currentUser?.updatePhotoURL(url);
-      final String deviceToken = await OneSignalHelper.deviceToken() as String;
+      final deviceToken = await OneSignalHelper.deviceToken() as String;
       await FirebaseFirestore.instance
           .collection('users')
           .doc(auth.currentUser?.uid)
@@ -105,7 +106,7 @@ class AuthProvider {
 
   Future<bool> signOut() async {
     try {
-      await googleSignIn.signOut();
+      await _googleSignIn.disconnect();
       await auth.signOut();
       return true;
     } on FirebaseAuthException catch (e) {

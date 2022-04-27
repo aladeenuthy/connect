@@ -25,7 +25,7 @@ class _AddUserDetailsState extends State<AddUserDetails> {
     if (_pickedImage == null || _usernameController.text.isEmpty) {
       return;
     }
-    showLoadingSpinner(context);
+    showLoadingSpinner();
     final isDone = await context.read<AuthProvider>().saveUserDetails(
         _pickedImage as File, _usernameController.text.trim());
     Navigator.of(context).pop(); //pop loading spinner
@@ -110,7 +110,7 @@ class _AddUserDetailsState extends State<AddUserDetails> {
                           backgroundColor: Colors.black,
                           child: IconButton(
                             onPressed: () {
-                              showImageOptions(context, _pickImage);
+                              showImageOptions(_pickImage);
                             },
                             icon: const Icon(
                               Icons.camera_alt,

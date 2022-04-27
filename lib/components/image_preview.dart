@@ -27,8 +27,7 @@ class ImagePreview extends StatelessWidget {
       ),
       body: Center(
         child: SizedBox(
-          width: double.infinity,
-          height: 300,
+          height: 500,
           child: Image.file(image, fit: BoxFit.cover, filterQuality: FilterQuality.high ,),
         ),
       ),

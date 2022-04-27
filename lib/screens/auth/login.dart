@@ -42,7 +42,7 @@ class _LoginScreenState extends State<LoginScreen> {
       return;
     }
     FocusScope.of(context).unfocus();
-    showLoadingSpinner(context);
+    showLoadingSpinner();
     final isLoggedIn = await context
         .read<AuthProvider>()
         .signIn(_emailController.text, _passwordController.text);
@@ -56,8 +56,7 @@ class _LoginScreenState extends State<LoginScreen> {
 
   void _loginWithGoogle() async {
     FocusScope.of(context).unfocus();
-    final isLoggedIn =
-        await context.read<AuthProvider>().signInWithGoogle();
+    final isLoggedIn = await context.read<AuthProvider>().signInWithGoogle();
     if (!isLoggedIn) {
       return; //not successful
     }
@@ -77,10 +76,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-  
-    super.dispose();
     _emailController.dispose();
     _passwordController.dispose();
+    super.dispose();
   }
 
   @override
